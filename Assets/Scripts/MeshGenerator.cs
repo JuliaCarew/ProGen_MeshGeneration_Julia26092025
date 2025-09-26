@@ -20,6 +20,7 @@ public class MeshGenerator : MonoBehaviour
     [SerializeField] float waveSpeed = 2f; 
     [SerializeField] Vector2 windDirection = new Vector2(1f, 0.5f); 
     [SerializeField] float waveHeight = 0.8f; // maximum wave height
+    [SerializeField] float waveSteepness = 0.5f; // how sharp the waves are (0-1)
 
     // mesh & vertices
     private Mesh mesh;
@@ -111,13 +112,14 @@ public class MeshGenerator : MonoBehaviour
             newPos.y = 0;
 
             // apply anim for miltiple waves
-            for (int w = 0; w < waveCount; w++)
+             for (int w = 0; w < waveCount; w++)
             {
                 // animate in different directions
                 float directionAngle = (w / (float)waveCount) * 2f * Mathf.PI + windDirection.x;
                 Vector2 waveDir = new Vector2(Mathf.Cos(directionAngle), Mathf.Sin(directionAngle));
 
-                // make different wave amplitude and frequency for every wave
+                // make different wave length, amplitude, and frequency for every wave
+                float waveLength = wavelength * (1f + w * 0.3f);
                 float waveAmp = waveHeight / (1f + w * 0.8f);
                 float waveFreq = frequency * (1f + w * 0.2f);
 
@@ -127,9 +129,14 @@ public class MeshGenerator : MonoBehaviour
 
                 // get more realistic shape
                 float verticalOffset = Mathf.Sin(wavePos) * waveAmp;
+                float steepnessOffset = waveSteepness * waveAmp / waveLength;
                 
                 // add height
                 newPos.y += verticalOffset;
+                
+                // horizontal displacement with steepness
+                newPos.x += waveDir.x * steepnessOffset * Mathf.Cos(wavePos);
+                newPos.z += waveDir.y * steepnessOffset * Mathf.Cos(wavePos);
             }
             
             // noise for more natural variation
